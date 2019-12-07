@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "ADComputeEigenstrainBase.h"
+#include "ComputeEigenstrainBase.h"
 #include "DerivativeMaterialPropertyNameInterface.h"
 #include "RankTwoTensorForward.h"
 

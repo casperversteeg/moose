@@ -10,11 +10,13 @@
 #include "ComputeEigenstrain.h"
 
 registerMooseObject("TensorMechanicsApp", ComputeEigenstrain);
+registerMooseObject("TensorMechanicsApp", ADComputeEigenstrain);
 
+template <bool is_ad>
 InputParameters
-ComputeEigenstrain::validParams()
+ComputeEigenstrainTempl<is_ad>::validParams()
 {
-  InputParameters params = ComputeEigenstrainBase::validParams();
+  InputParameters params = ComputeEigenstrainBaseTempl<is_ad>::validParams();
   params.addClassDescription("Computes a constant Eigenstrain");
   params.addRequiredParam<std::vector<Real>>(
       "eigen_base", "Vector of values defining the constant base tensor for the Eigenstrain");
@@ -23,15 +25,21 @@ ComputeEigenstrain::validParams()
   return params;
 }
 
-ComputeEigenstrain::ComputeEigenstrain(const InputParameters & parameters)
-  : ComputeEigenstrainBase(parameters), _prefactor(getMaterialProperty<Real>("prefactor"))
+template <bool is_ad>
+ComputeEigenstrainTempl<is_ad>::ComputeEigenstrainTempl(const InputParameters & parameters)
+  : ComputeEigenstrainBaseTempl<is_ad>(parameters),
+    _prefactor(this->template getGenericMaterialProperty<Real, is_ad>("prefactor"))
 {
-  _eigen_base_tensor.fillFromInputVector(getParam<std::vector<Real>>("eigen_base"));
+  _eigen_base_tensor.fillFromInputVector(this->template getParam<std::vector<Real>>("eigen_base"));
 }
 
+template <bool is_ad>
 void
-ComputeEigenstrain::computeQpEigenstrain()
+ComputeEigenstrainTempl<is_ad>::computeQpEigenstrain()
 {
   // Define Eigenstrain
-  _eigenstrain[_qp] = _eigen_base_tensor * _prefactor[_qp];
+  this->_eigenstrain[this->_qp] = _eigen_base_tensor * _prefactor[this->_qp];
 }
+
+template class ComputeEigenstrainTempl<false>;
+template class ComputeEigenstrainTempl<true>;
